@@ -13,12 +13,9 @@ from .utils.password_generator import generate_password, calculate_password_stre
 bp = Blueprint('main', __name__)
 
 
-# ==================== Authentication Routes ====================
-
 @bp.route('/')
 def index():
     if current_user.is_authenticated:
-        # Check if vault is unlocked
         if session.get('vault_unlocked'):
             return redirect(url_for('main.dashboard'))
         return redirect(url_for('main.unlock_vault'))
@@ -50,7 +47,6 @@ def register():
         if master_password != confirm_master:
             errors.append('Master passwords do not match.')
         
-        # Check if user already exists
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             errors.append('An account with this email already exists.')
@@ -60,11 +56,10 @@ def register():
                 flash(error, 'danger')
             return render_template('auth/register.html')
         
-        # Create new user
         user = User(email=email)
         user.set_password(password)
         user.set_master_password(master_password)
-        user.vault_salt = generate_salt()  # Store salt for encryption
+        user.vault_salt = generate_salt()
         
         db.session.add(user)
         db.session.commit()
@@ -95,7 +90,6 @@ def login():
         login_user(user)
         flash('Logged in successfully!', 'success')
         
-        # Check if user has set a master password
         if user.master_password_hash:
             return redirect(url_for('main.unlock_vault'))
         
@@ -108,7 +102,6 @@ def login():
 @bp.route('/unlock-vault', methods=['GET', 'POST'])
 @login_required
 def unlock_vault():
-    # If vault is already unlocked, redirect to dashboard
     if session.get('vault_unlocked'):
         return redirect(url_for('main.dashboard'))
     
@@ -120,7 +113,7 @@ def unlock_vault():
             return render_template('auth/unlock.html')
         
         session['vault_unlocked'] = True
-        session['master_password'] = master_password  # Store in session for encryption/decryption
+        session['master_password'] = master_password
         flash('Vault unlocked!', 'success')
         return redirect(url_for('main.dashboard'))
     
@@ -146,23 +139,18 @@ def lock_vault():
     return redirect(url_for('main.unlock_vault'))
 
 
-#Dashboard & Vault Routes
-
 @bp.route('/dashboard')
 @login_required
 def dashboard():
     if not session.get('vault_unlocked'):
         return redirect(url_for('main.unlock_vault'))
     
-    # Get filter parameters
     filter_type = request.args.get('filter', 'all')
     category_id = request.args.get('category', '')
     search_query = request.args.get('search', '')
     
-    # Base query - only current user's passwords
     query = PasswordVault.query.filter_by(user_id=current_user.id)
     
-    # Apply filters
     if filter_type == 'favorites':
         query = query.filter_by(is_favorite=True)
     elif filter_type == 'recent':
@@ -180,14 +168,10 @@ def dashboard():
             (PasswordVault.notes.ilike(search))
         )
     
-    # Order by favorites first, then by name
     passwords = query.order_by(
         PasswordVault.is_favorite.desc(),
         PasswordVault.service_name.asc()
     ).all()
-    
-    # Decrypt passwords for display (only if needed)
-    # We'll show masked passwords by default
     
     categories = Category.query.filter_by(user_id=current_user.id).all()
     
@@ -198,8 +182,6 @@ def dashboard():
                            selected_category=category_id,
                            search_query=search_query)
 
-
-# ==================== Password Management Routes ====================
 
 @bp.route('/password/add', methods=['GET', 'POST'])
 @login_required
@@ -222,7 +204,6 @@ def add_password():
             flash('Service name, username, and password are required.', 'danger')
             return render_template('vault/password_add.html', categories=categories)
         
-        # Encrypt the password
         master_password = session.get('master_password')
         encrypted_password = encrypt_password(password, master_password, current_user.vault_salt)
         
@@ -258,10 +239,7 @@ def view_password(password_id):
         flash('Password not found.', 'danger')
         return redirect(url_for('main.dashboard'))
     
-    # Decrypt the password
     master_password = session.get('master_password')
-    
-
     
     decrypted_password = decrypt_password(
         password_entry.encrypted_password, 
@@ -300,7 +278,6 @@ def edit_password(password_id):
         password_entry.category_id = request.form.get('category_id') or None
         password_entry.is_favorite = request.form.get('is_favorite') == 'on'
         
-        # Only re-encrypt if a new password was provided
         if new_password:
             master_password = session.get('master_password')
             salt = current_user.vault_salt.encode() if current_user.vault_salt else None
@@ -312,7 +289,6 @@ def edit_password(password_id):
         flash('Password updated successfully!', 'success')
         return redirect(url_for('main.dashboard'))
     
-    # Decrypt for display in form
     master_password = session.get('master_password')
     decrypted_password = decrypt_password(
         password_entry.encrypted_password, 
@@ -365,8 +341,6 @@ def toggle_favorite(password_id):
     })
 
 
-# ==================== Category Management Routes ====================
-
 @bp.route('/categories')
 @login_required
 def list_categories():
@@ -391,7 +365,6 @@ def add_category():
             flash('Category name is required.', 'danger')
             return render_template('vault/category_add.html')
         
-        # Check for duplicate name
         existing = Category.query.filter_by(user_id=current_user.id, name=name).first()
         if existing:
             flash('A category with this name already exists.', 'danger')
@@ -427,7 +400,6 @@ def edit_category(category_id):
             flash('Category name is required.', 'danger')
             return render_template('vault/category_edit.html', category=category)
         
-        # Check for duplicate name (excluding current category)
         existing = Category.query.filter(
             Category.user_id == current_user.id,
             Category.name == name,
@@ -460,7 +432,6 @@ def delete_category(category_id):
         flash('Category not found.', 'danger')
         return redirect(url_for('main.list_categories'))
     
-    # Move passwords to uncategorized (set category_id to None)
     for password in category.passwords:
         password.category_id = None
     
@@ -470,8 +441,6 @@ def delete_category(category_id):
     flash('Category deleted successfully!', 'success')
     return redirect(url_for('main.list_categories'))
 
-
-# ==================== Password Generator API ====================
 
 @bp.route('/api/generate-password')
 @login_required
@@ -511,8 +480,6 @@ def api_check_password_strength():
     return jsonify(strength)
 
 
-# ==================== Export/Import Routes ====================
-
 @bp.route('/export')
 @login_required
 def export_passwords():
@@ -524,7 +491,6 @@ def export_passwords():
     passwords = PasswordVault.query.filter_by(user_id=current_user.id).all()
     categories = Category.query.filter_by(user_id=current_user.id).all()
     
-    # Decrypt all passwords for export
     master_password = session.get('master_password')
     
     exported_data = []
@@ -548,7 +514,6 @@ def export_passwords():
         })
     
     if format_type == 'csv':
-        # Create CSV
         output = io.StringIO()
         if exported_data:
             writer = csv.DictWriter(output, fieldnames=exported_data[0].keys())
@@ -560,7 +525,6 @@ def export_passwords():
             'Content-Disposition': 'attachment; filename=passwords_export.csv'
         }
     
-    # Default to JSON
     return jsonify({
         'exported_at': db.func.now().scalar,
         'password_count': len(exported_data),
@@ -586,18 +550,14 @@ def import_passwords():
             return redirect(url_for('main.import_passwords'))
         
         try:
-            # Determine format from filename
             if file.filename.endswith('.csv'):
-                # Parse CSV
                 content = file.read().decode('utf-8')
                 reader = csv.DictReader(io.StringIO(content))
                 data = list(reader)
             else:
-                # Parse JSON
                 data = json.load(file)
             
             if not isinstance(data, list):
-                # Check if it's our export format
                 if 'passwords' in data:
                     data = data['passwords']
                 else:
@@ -605,7 +565,6 @@ def import_passwords():
             
             master_password = session.get('master_password')
             
-            # Create category name to ID mapping
             categories = {c.name: c.id for c in Category.query.filter_by(user_id=current_user.id).all()}
             
             imported_count = 0
@@ -621,10 +580,8 @@ def import_passwords():
                         errors.append(f"Skipped entry: missing required fields")
                         continue
                     
-                    # Encrypt password
                     encrypted_password = encrypt_password(password, master_password, current_user.vault_salt)
                     
-                    # Get category ID
                     category_name = item.get('category')
                     category_id = categories.get(category_name) if category_name else None
                     
@@ -649,7 +606,7 @@ def import_passwords():
             
             flash(f'Successfully imported {imported_count} passwords!', 'success')
             if errors:
-                for error in errors[:5]:  # Show first 5 errors
+                for error in errors[:5]:
                     flash(error, 'warning')
             
             return redirect(url_for('main.dashboard'))
@@ -660,8 +617,6 @@ def import_passwords():
     
     return render_template('vault/import.html')
 
-
-# ==================== Settings Routes ====================
 
 @bp.route('/settings', methods=['GET', 'POST'])
 @login_required
@@ -689,15 +644,12 @@ def settings():
                 flash('New master password must be at least 4 characters.', 'danger')
                 return render_template('vault/settings.html')
             
-            # Re-encrypt all passwords with new master password
             new_salt = generate_salt()
             
             passwords = PasswordVault.query.filter_by(user_id=current_user.id).all()
             
             for pwd in passwords:
-                # Decrypt with old
                 decrypted = decrypt_password(pwd.encrypted_password, current_master, current_user.vault_salt)
-                # Re-encrypt with new
                 pwd.encrypted_password = encrypt_password(decrypted, new_master, new_salt)
             
             current_user.set_master_password(new_master)

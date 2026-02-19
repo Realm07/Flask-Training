@@ -16,15 +16,13 @@ class User(UserMixin, db.Model):
     
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(256))
-    master_password_hash = db.Column(db.String(256))  # For encrypting the vault
-    vault_salt = db.Column(db.String(24))  # Salt for encrypting passwords
+    master_password_hash = db.Column(db.String(256))
+    vault_salt = db.Column(db.String(24))
     created_at = db.Column(db.DateTime, default=db.func.now())
     
-    # Relationships
     passwords = db.relationship('PasswordVault', backref='user', lazy=True, cascade='all, delete-orphan')
     categories = db.relationship('Category', backref='user', lazy=True, cascade='all, delete-orphan')
     
-    # Vault unlock status (not stored in DB, used in session)
     vault_unlocked = False
 
     def set_password(self, password):
@@ -50,7 +48,7 @@ class Category(db.Model):
     )
     
     name = db.Column(db.String(100), nullable=False)
-    color = db.Column(db.String(7), default='#6c757d')  # Hex color for UI
+    color = db.Column(db.String(7), default='#6c757d')
     user_id = db.Column(
         db.String(36),
         db.ForeignKey('users.id'),
@@ -58,7 +56,6 @@ class Category(db.Model):
     )
     created_at = db.Column(db.DateTime, default=db.func.now())
     
-    # Relationships
     passwords = db.relationship('PasswordVault', backref='category', lazy=True)
 
 
@@ -73,7 +70,6 @@ class PasswordVault(db.Model):
     
     service_name = db.Column(db.String(100), nullable=False)
     username = db.Column(db.String(120), nullable=False)
-    # Encrypted password stored as base64 (after encryption)
     encrypted_password = db.Column(db.Text, nullable=False)
     url = db.Column(db.String(500))
     notes = db.Column(db.Text)

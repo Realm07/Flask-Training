@@ -8,20 +8,6 @@ def generate_password(length: int = 16,
                      use_digits: bool = True, 
                      use_special: bool = True,
                      exclude_ambiguous: bool = False) -> str:
-    """
-    Generate a secure random password.
-    
-    Args:
-        length: Length of the password (default: 16)
-        use_uppercase: Include uppercase letters (default: True)
-        use_lowercase: Include lowercase letters (default: True)
-        use_digits: Include digits (default: True)
-        use_special: Include special characters (default: True)
-        exclude_ambiguous: Exclude ambiguous characters like 0, O, l, 1 (default: False)
-    
-    Returns:
-        str: The generated password
-    """
     characters = ''
     
     if use_uppercase:
@@ -48,7 +34,6 @@ def generate_password(length: int = 16,
     if not characters:
         characters = string.ascii_letters + string.digits
     
-    # Ensure at least one character from each selected category
     password = []
     
     if use_uppercase:
@@ -72,33 +57,21 @@ def generate_password(length: int = 16,
     if use_special:
         password.append(random.choice('!@#$%^&*()_+-=[]{}|;:,.<>?'))
     
-    # Fill the rest with random characters
     remaining_length = length - len(password)
     password.extend(random.choice(characters) for _ in range(remaining_length))
     
-    # Shuffle the password to randomize positions
     random.shuffle(password)
     
     return ''.join(password)
 
 
 def calculate_password_strength(password: str) -> dict:
-    """
-    Calculate the strength of a password.
-    
-    Args:
-        password: The password to evaluate
-    
-    Returns:
-        dict: Contains 'score' (0-100), 'strength' (label), and 'feedback'
-    """
     score = 0
     feedback = []
     
     if not password:
         return {'score': 0, 'strength': 'Very Weak', 'feedback': ['Password is empty']}
     
-    # Length scoring
     if len(password) >= 8:
         score += 10
     if len(password) >= 12:
@@ -108,7 +81,6 @@ def calculate_password_strength(password: str) -> dict:
     if len(password) >= 20:
         score += 10
     
-    # Character variety scoring
     has_lower = any(c.islower() for c in password)
     has_upper = any(c.isupper() for c in password)
     has_digit = any(c.isdigit() for c in password)
@@ -123,13 +95,10 @@ def calculate_password_strength(password: str) -> dict:
     if has_special:
         score += 15
     
-    # Deductions for patterns
-    # Check for repeated characters
     if len(set(password)) < len(password) * 0.5:
         score -= 10
         feedback.append('Contains repeated characters')
     
-    # Check for sequential characters
     sequential = False
     for i in range(len(password) - 2):
         if ord(password[i+1]) - ord(password[i]) == 1 and ord(password[i+2]) - ord(password[i+1]) == 1:
@@ -140,17 +109,14 @@ def calculate_password_strength(password: str) -> dict:
         score -= 10
         feedback.append('Contains sequential characters')
     
-    # Check for common patterns
     common_patterns = ['123', 'abc', 'password', 'qwerty', 'admin']
     for pattern in common_patterns:
         if pattern in password.lower():
             score -= 15
             feedback.append(f'Contains common pattern: {pattern}')
     
-    # Clamp score between 0 and 100
     score = max(0, min(100, score))
     
-    # Determine strength label
     if score >= 80:
         strength = 'Very Strong'
     elif score >= 60:

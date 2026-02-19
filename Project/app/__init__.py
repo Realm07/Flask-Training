@@ -9,7 +9,6 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY=os.environ.get('SECRET_KEY', 'dev-key'),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
-
         SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL', f'sqlite:///{db_path}'),
     )
 
@@ -29,8 +28,6 @@ def create_app(test_config=None):
     from .extensions import login_manager
     login_manager.init_app(app)
 
-   
-    # Register blueprints
     from .routes import bp as main_bp
     app.register_blueprint(main_bp)
 
