@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Import Passwords - Password Vault{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-upload"></i> Import Passwords</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Supported Formats:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li><strong>JSON:</strong> Our export format or any JSON array with password objects</li>
+                        <li><strong>CSV:</strong> Comma-separated values with headers</li>
+                    </ul>
+                </div>
+                
+                <h5 class="mt-4">Expected Fields:</h5>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Required</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>service_name</code></td>
+                            <td>Yes</td>
+                            <td>Name of the service (e.g., Gmail, Facebook)</td>
+                        </tr>
+                        <tr>
+                            <td><code>username</code></td>
+                            <td>Yes</td>
+                            <td>Username or email</td>
+                        </tr>
+                        <tr>
+                            <td><code>password</code></td>
+                            <td>Yes</td>
+                            <td>The password</td>
+                        </tr>
+                        <tr>
+                            <td><code>url</code></td>
+                            <td>No</td>
+                            <td>Website URL</td>
+                        </tr>
+                        <tr>
+                            <td><code>notes</code></td>
+                            <td>No</td>
+                            <td>Additional notes</td>
+                        </tr>
+                        <tr>
+                            <td><code>category</code></td>
+                            <td>No</td>
+                            <td>Category name (must match existing category)</td>
+                        </tr>
+                        <tr>
+                            <td><code>is_favorite</code></td>
+                            <td>No</td>
+                            <td>true/false</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <form method="POST" enctype="multipart/form-data" class="mt-4">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Select File *</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".json,.csv" required>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Import
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="mt-4">
+                    <h5>Example JSON:</h5>
+                    <pre class="bg-light p-3 rounded"><code>[
+  {
+    "service_name": "Gmail",
+    "username": "user@gmail.com",
+    "password": "mysecretpassword",
+    "url": "https://gmail.com",
+    "notes": "Personal email",
+    "category": "Personal"
+  },
+  {
+    "service_name": "Facebook", 
+    "username": "user@facebook.com",
+    "password": "anotherpassword",
+    "category": "Social"
+  }
+]</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

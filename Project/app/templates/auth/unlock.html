@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Unlock Vault - Password Vault{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-unlock" style="font-size: 3rem; color: var(--primary-color);"></i>
+                    <h3 class="mt-3">Unlock Vault</h3>
+                    <p class="text-muted">Enter your master password to access your passwords</p>
+                </div>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="master_password" class="form-label">Master Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-key"></i></span>
+                            <input type="password" class="form-control" id="master_password" name="master_password" required autofocus>
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
+                                <i class="bi bi-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-unlock"></i> Unlock
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <p class="text-muted small">
+                        <i class="bi bi-info-circle"></i> 
+                        Your master password decrypts your stored passwords. 
+                        It cannot be recovered if forgotten.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePassword() {
+        const input = document.getElementById('master_password');
+        const icon = document.getElementById('toggleIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    }
+</script>
+{% endblock %}

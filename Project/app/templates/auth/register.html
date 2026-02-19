@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Password Vault{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-shield-plus" style="font-size: 3rem; color: var(--primary-color);"></i>
+                    <h3 class="mt-3">Create Account</h3>
+                    <p class="text-muted">Secure your passwords with encryption</p>
+                </div>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input type="email" class="form-control" id="email" name="email" required autofocus>
+                        </div>
+                        <div class="form-text">You'll use this to log in to your account.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Account Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-key"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" required minlength="6">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('password')">
+                                <i class="bi bi-eye" id="password-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">This password protects your account login (minimum 6 characters).</div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h5 class="mb-3"><i class="bi bi-shield-lock"></i> Master Password</h5>
+                    <p class="text-muted small mb-3">The master password encrypts all your stored passwords. Choose a strong, memorable password - it cannot be recovered if forgotten!</p>
+                    
+                    <div class="mb-3">
+                        <label for="master_password" class="form-label">Master Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input type="password" class="form-control" id="master_password" name="master_password" required minlength="4">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('master_password')">
+                                <i class="bi bi-eye" id="master_password-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirm_master_password" class="form-label">Confirm Master Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                            <input type="password" class="form-control" id="confirm_master_password" name="confirm_master_password" required minlength="4">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confirm_master_password')">
+                                <i class="bi bi-eye" id="confirm_master_password-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <p class="text-muted">Already have an account? <a href="{{ url_for('main.login') }}">Login</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const eye = document.getElementById(inputId + '-eye');
+        if (input.type === 'password') {
+            input.type = 'text';
+            eye.classList.remove('bi-eye');
+            eye.classList.add('bi-eye-slash');
+        } else {
+            input.type = 'password';
+            eye.classList.remove('bi-eye-slash');
+            eye.classList.add('bi-eye');
+        }
+    }
+</script>
+{% endblock %}

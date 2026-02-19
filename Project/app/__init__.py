@@ -30,5 +30,8 @@ def create_app(test_config=None):
     login_manager.init_app(app)
 
    
+    # Register blueprints
+    from .routes import bp as main_bp
+    app.register_blueprint(main_bp)
 
     return app

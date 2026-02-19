@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Password Vault{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-key"></i> Change Master Password</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">
+                    The master password encrypts all your stored passwords. 
+                    If you change it, all passwords will be re-encrypted with the new key.
+                </p>
+                <form method="POST">
+                    <input type="hidden" name="action" value="change_master_password">
+                    
+                    <div class="mb-3">
+                        <label for="current_master_password" class="form-label">Current Master Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="current_master_password" name="current_master_password" required>
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('current_master_password')">
+                                <i class="bi bi-eye" id="current_master_password-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="new_master_password" class="form-label">New Master Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="new_master_password" name="new_master_password" required minlength="4">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('new_master_password')">
+                                <i class="bi bi-eye" id="new_master_password-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirm_master_password" class="form-label">Confirm New Master Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="confirm_master_password" name="confirm_master_password" required>
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confirm_master_password')">
+                                <i class="bi bi-eye" id="confirm_master_password-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Change Master Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-person"></i> Change Account Password</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">
+                    This changes your login password, not the master password for encryption.
+                </p>
+                <form method="POST">
+                    <input type="hidden" name="action" value="change_account_password">
+                    
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Current Account Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="current_password" name="current_password" required>
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('current_password')">
+                                <i class="bi bi-eye" id="current_password-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">New Account Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="new_password" name="new_password" required minlength="6">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('new_password')">
+                                <i class="bi bi-eye" id="new_password-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm New Password</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confirm_password')">
+                                <i class="bi bi-eye" id="confirm_password-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="bi bi-save"></i> Change Account Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-database"></i> Data Management</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Export Your Data</h6>
+                        <p class="text-muted small">Download all your passwords in JSON or CSV format.</p>
+                        <a href="{{ url_for('main.export_passwords', format='json') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-download"></i> Export as JSON
+                        </a>
+                        <a href="{{ url_for('main.export_passwords', format='csv') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-download"></i> Export as CSV
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Import Data</h6>
+                        <p class="text-muted small">Import passwords from a JSON or CSV file.</p>
+                        <a href="{{ url_for('main.import_passwords') }}" class="btn btn-outline-info">
+                            <i class="bi bi-upload"></i> Import Passwords
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const eye = document.getElementById(inputId + '-eye');
+        if (input.type === 'password') {
+            input.type = 'text';
+            eye.classList.remove('bi-eye');
+            eye.classList.add('bi-eye-slash');
+        } else {
+            input.type = 'password';
+            eye.classList.remove('bi-eye-slash');
+            eye.classList.add('bi-eye');
+        }
+    }
+</script>
+{% endblock %}
